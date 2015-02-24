@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 /**
  * Application name: TextBuddy
- * Version: 1.0
+ * Version: 2.0
  * This application is meant to manage tasks of users. 
  * It will support add, delete, display, sort, exit, clear and drop methods right now.
  * All the above methods support slight flexibility with regard to user's instruction.
@@ -103,23 +103,27 @@ public class TextBuddy {
 		executeApp();
 	}
 
+	private void showToUser(String str) {
+		showToUser(str);
+	}
+	
 	private void executeApp() {
 		String currentCommand = null;
 		while (true) {
-			System.out.print(MESSAGE_INPUT);
+			showToUser(MESSAGE_INPUT);
 			currentCommand = scan.nextLine();
 			//Once accept break message, stop executing the application
 			if (isTerminateCommand(currentCommand)) 
 				break;
 		}
 	}	
-	//Modified: add a new boolean method
+
 	private boolean isTerminateCommand(String currentCommand) {
 		return this.solve(currentCommand) == BREAK_TRUE;
 	}
 	
 	private void printWelcomInfo() {
-		System.out.println(MESSAGE_WELCOM);
+		showToUser(MESSAGE_WELCOM);
 	}
 	/**
 	 * Decide which features are implemented, convenient for adding or deleting features.
@@ -135,8 +139,6 @@ public class TextBuddy {
 	}
 	/**
 	 * Determine which method the user is calling and apply appropriate method
-	 * @param currentCommand
-	 * @return
 	 */
 	private int solve(String currentCommand) {
 		//Separate the command field and the content field  
@@ -172,7 +174,7 @@ public class TextBuddy {
 		}
 		return BREAK_FALSE;
 	}
-	//Modified: add a new boolean method 
+
 	private boolean isUnknown(Integer commandType) {
 		return commandType == null;
 	}
@@ -183,7 +185,7 @@ public class TextBuddy {
 		try {
 			File file = new File(fileName);
 			file.delete();
-			System.out.println(MESSAGE_DROP);
+			showToUser(MESSAGE_DROP);
 			Thread.sleep(PAUSE_TIME);
 			System.exit(1);
 		} catch (InterruptedException e) {
@@ -198,14 +200,13 @@ public class TextBuddy {
 			buffer = new ArrayList<String>();
 			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
 			bw.close();
-			System.out.println(MESSAGE_CLEAR);
+			showToUser(MESSAGE_CLEAR);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	/**
 	 * Copy the content in the buffer into the file
-	 * @throws IOException
 	 */
 	private void updateFile() throws IOException {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
@@ -217,7 +218,6 @@ public class TextBuddy {
 	}
 	/**
 	 * append a string to the end of a file
-	 * @param str
 	 */
 	private void appendFile(String str) {
 		try {
@@ -233,7 +233,6 @@ public class TextBuddy {
 	/**
 	 * Sort according to the content requires
 	 * Now only support sort according to alphabet.
-	 * @param content
 	 */
 	private void sort(String content) {
 		try {
@@ -247,21 +246,18 @@ public class TextBuddy {
 	/**
 	 * Display all tasks with number labeled
 	 */
-	//Modified: rename the method
 	private void display() {
 		if (buffer.size() == 0) {
-			System.out.println(MESSAGE_EMPTY_LIST);
+			showToUser(MESSAGE_EMPTY_LIST);
 		} else {
 			for (int i = 0; i < buffer.size(); i++) {
-				System.out.println(i+1 + "." + buffer.get(i));
+				showToUser(i+1 + "." + buffer.get(i));
 			}
 		}
 	}
 	/**
 	 * Delete a certain task specified by the content
-	 * @param content
 	 */
-	//Modified: change the return type to void
 	private void delete(String content) {
 		try {
 			if (isLegalArgumentsDel(content)) {
@@ -269,7 +265,7 @@ public class TextBuddy {
 				String TextRemoved = buffer.get(index);
 				buffer.remove(index);
 				updateFile();
-				System.out.println(TextRemoved + MESSAGE_DELETE + fileName);
+				showToUser(TextRemoved + MESSAGE_DELETE + fileName);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -296,29 +292,25 @@ public class TextBuddy {
 	
 	private boolean isLegalArgumentsDel(String content) {
 		if (content == null) {
-			System.out.println(MESSAGE_DELETE_NULL);
+			showToUser(MESSAGE_DELETE_NULL);
 			return false;
 		} else if (isNumeric(content) && isBounded(content)) {
 			return true;
 		} else {
-			System.out.println(MESSAGE_NOTASK);
+			showToUser(MESSAGE_NOTASK);
 			return false;
 		}
 	}
 	/**
 	 * Add a new task to the end of the task list
-	 * @param content
 	 */
-	//Modified: change the return type to void
-	//			extract the appendFile method
-	//			extract the isLegalArgumentsAdd method
 	private void add(String content) {
 		if (isLegalArgumentsAdd(content)) {
-			System.out.println(MESSAGE_ADD_NULL);
+			showToUser(MESSAGE_ADD_NULL);
 		} else {
 			buffer.add(content);
 			appendFile(content);
-			System.out.println(content + MESSAGE_ADD + fileName);
+			showToUser(content + MESSAGE_ADD + fileName);
 		}
 	}
 
@@ -327,7 +319,7 @@ public class TextBuddy {
 	}
 
 	private void methodNotSupported() {
-		System.out.println(MESSAGE_NOTSUPPORTED);
+		showToUser(MESSAGE_NOTSUPPORTED);
 	}
 
 	private String getContent(String currentCommand) {
