@@ -48,6 +48,7 @@ public class TextBuddy {
 	private static final String[] KEYWORD_EXIT = {"exit", "quit"};
 	private static final String[] KEYWORD_CLEAR = {"clear", "clrscr"};
 	private static final String[] KEYWORD_DROP = {"drop"};
+	private static final String[] KEYWORD_SEARCH = {"search"};
 	
 	private static final int INDEX_ADD = 1;
 	private static final int INDEX_DELETE = 2;
@@ -56,6 +57,7 @@ public class TextBuddy {
 	private static final int INDEX_DISPLAY = 5;
 	private static final int INDEX_EXIT = 6;
 	private static final int INDEX_SORT = 7;
+	private static final int INDEX_SEARCH = 8;
 	
 	private static final int BREAK_TRUE = 0;
 	private static final int BREAK_FALSE = 1;
@@ -98,13 +100,15 @@ public class TextBuddy {
 		case INDEX_DISPLAY: 
 			return display();
 		case INDEX_SORT: 
-			return this.sort(Content);
+			return sort(Content);
 		case INDEX_EXIT: 
 			return null;
 		case INDEX_CLEAR: 
 			return clear();
 		case INDEX_DROP:
-			return this.drop();
+			return drop();
+		case INDEX_SEARCH:
+			return search(Content);
 		default: 
 			break;
 		}
@@ -149,6 +153,7 @@ public class TextBuddy {
 		addFeature(KEYWORD_EXIT, INDEX_EXIT);
 		addFeature(KEYWORD_CLEAR, INDEX_CLEAR);
 		addFeature(KEYWORD_DROP, INDEX_DROP);
+		addFeature(KEYWORD_SEARCH, INDEX_SEARCH);
 	}
 	/**
 	 * Determine which method the user is calling and apply appropriate method
@@ -164,25 +169,28 @@ public class TextBuddy {
 		}
 		switch (CommandType) {
 		case INDEX_ADD: 
-			showToUser(this.add(Content));
+			showToUser(add(Content));
 			break;
 		case INDEX_DELETE: 
-			showToUser(this.delete(Content));
+			showToUser(delete(Content));
 			break;
 		case INDEX_DISPLAY: 
-			showToUser(this.display());
+			showToUser(display());
 			break;
 		case INDEX_SORT: 
-			showToUser(this.sort(Content));
+			showToUser(sort(Content));
 			break;
 		case INDEX_EXIT: 
 			return BREAK_TRUE;
 		case INDEX_CLEAR: 
-			showToUser(this.clear());
+			showToUser(clear());
 			break;
 		case INDEX_DROP:
-			showToUser(this.drop());
+			showToUser(drop());
 			return BREAK_TRUE;
+		case INDEX_SEARCH:
+			showToUser(search(Content));
+			break;
 		default: 
 			break;
 		}
@@ -324,6 +332,22 @@ public class TextBuddy {
 			buffer.add(content);
 			appendFile(content);
 			return content + MESSAGE_ADD + fileName;
+		}
+	}
+	
+	private String search(String content) {
+		if (content == null) {
+			return display();
+		} else {
+			String temp = "";
+			int count = 1;
+			for (int i = 0; i < buffer.size(); i++) {
+				if (buffer.get(i).contains(content)) {
+					temp = temp + Integer.toString(count) + "." + buffer.get(i) + "\n";
+					count++;
+				}
+			}
+			return temp;
 		}
 	}
 

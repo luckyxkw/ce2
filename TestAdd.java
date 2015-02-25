@@ -20,6 +20,7 @@ public class TestAdd {
 		assertEquals("say goodbye! added into tasklist.txt", output);
 		output = tb.executeCommand("add see you again");
 		assertEquals("see you again added into tasklist.txt", output);
+		
 	}
 
 }
