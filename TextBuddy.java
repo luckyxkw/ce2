@@ -78,6 +78,11 @@ public class TextBuddy {
 		featureList = new Hashtable<String, Integer>();
 	}
 
+	public static TextBuddy setUp(String[] name) {
+		TextBuddy tb = setUpEnvironment(name);
+		tb.addInSelectedFeatures();
+		return tb;
+	}
 	public String executeCommand(String command) {
 		String Command = getCommand(command);
 		String Content = getContent(command);
