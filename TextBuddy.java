@@ -57,8 +57,6 @@ public class TextBuddy {
 	private static final int INDEX_EXIT = 6;
 	private static final int INDEX_SORT = 7;
 	
-	private static final int PAUSE_TIME = 1000;
-	
 	private static final int BREAK_TRUE = 0;
 	private static final int BREAK_FALSE = 1;
 	
@@ -71,46 +69,60 @@ public class TextBuddy {
 		CurrentPool.solveUserRequest();
 	}
 
-	private String fileName = null;
-	private ArrayList<String> buffer = null;
+	private static String fileName = null;
+	private static ArrayList<String> buffer = null;
 	private Hashtable<String, Integer> featureList = null;
 	
-	public TextBuddy(String name) {
-		try {
-			fileName = name;
-			buffer = new ArrayList<String>();
-			featureList = new Hashtable<String, Integer>();
-			File file = new File(fileName);
-			if (!file.exists() || !file.isFile()) {
-				file.createNewFile();
-			}
-			BufferedReader br = new BufferedReader(new FileReader(fileName));
-			String temp = br.readLine();
-			while (temp != null) {
-				buffer.add(temp);
-				temp = br.readLine();
-			}
-			br.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public TextBuddy() {
+		buffer = new ArrayList<String>();
+		featureList = new Hashtable<String, Integer>();
 	}
 
+	public String executeCommand(String command) {
+		String Command = getCommand(command);
+		String Content = getContent(command);
+		Integer CommandType = featureList.get(Command);
+		if (isUnknown(CommandType)) {
+			return MESSAGE_NOTSUPPORTED;
+		}
+		switch (CommandType) {
+		case INDEX_ADD: 
+			return add(Content);
+		case INDEX_DELETE: 
+			return delete(Content);
+		case INDEX_DISPLAY: 
+			return display();
+		case INDEX_SORT: 
+			return this.sort(Content);
+		case INDEX_EXIT: 
+			return null;
+		case INDEX_CLEAR: 
+			return clear();
+		case INDEX_DROP:
+			return this.drop();
+		default: 
+			break;
+		}
+		return null;
+	}
+	
 	private void solveUserRequest() {
 		printWelcomInfo();		
 		executeApp();
 	}
-
+	
+	private void printWelcomInfo() {
+		showToUser(MESSAGE_WELCOM);
+	}
+	
 	private void showToUser(String str) {
-		showToUser(str);
+		System.out.println(str);
 	}
 	
 	private void executeApp() {
 		String currentCommand = null;
 		while (true) {
-			showToUser(MESSAGE_INPUT);
+			System.out.print(MESSAGE_INPUT);
 			currentCommand = scan.nextLine();
 			//Once accept break message, stop executing the application
 			if (isTerminateCommand(currentCommand)) 
@@ -120,10 +132,6 @@ public class TextBuddy {
 
 	private boolean isTerminateCommand(String currentCommand) {
 		return this.solve(currentCommand) == BREAK_TRUE;
-	}
-	
-	private void printWelcomInfo() {
-		showToUser(MESSAGE_WELCOM);
 	}
 	/**
 	 * Decide which features are implemented, convenient for adding or deleting features.
@@ -151,24 +159,25 @@ public class TextBuddy {
 		}
 		switch (CommandType) {
 		case INDEX_ADD: 
-			this.add(Content);
+			showToUser(this.add(Content));
 			break;
 		case INDEX_DELETE: 
-			this.delete(Content);
+			showToUser(this.delete(Content));
 			break;
 		case INDEX_DISPLAY: 
-			this.display();
+			showToUser(this.display());
 			break;
 		case INDEX_SORT: 
-			this.sort(Content);
+			showToUser(this.sort(Content));
 			break;
 		case INDEX_EXIT: 
 			return BREAK_TRUE;
 		case INDEX_CLEAR: 
-			this.clear();
+			showToUser(this.clear());
 			break;
 		case INDEX_DROP:
-			this.drop();
+			showToUser(this.drop());
+			return BREAK_TRUE;
 		default: 
 			break;
 		}
@@ -181,29 +190,24 @@ public class TextBuddy {
 	/**
 	 * Remove the current task list from disk and exit
 	 */
-	private void drop() {
-		try {
-			File file = new File(fileName);
-			file.delete();
-			showToUser(MESSAGE_DROP);
-			Thread.sleep(PAUSE_TIME);
-			System.exit(1);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} 
+	private String drop() {
+		File file = new File(fileName);
+		file.delete();
+		return MESSAGE_DROP; 
 	}
 	/**
 	 * Delete all tasks from current task list
 	 */
-	private void clear() {
+	private String clear() {
 		try {
 			buffer = new ArrayList<String>();
 			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
 			bw.close();
-			showToUser(MESSAGE_CLEAR);
+			return MESSAGE_CLEAR;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	/**
 	 * Copy the content in the buffer into the file
@@ -234,42 +238,46 @@ public class TextBuddy {
 	 * Sort according to the content requires
 	 * Now only support sort according to alphabet.
 	 */
-	private void sort(String content) {
+	private String sort(String content) {
 		try {
 			Collections.sort(buffer);
 			updateFile();
-			this.display();
+			return display();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}
+		return null;
 	}
 	/**
 	 * Display all tasks with number labeled
 	 */
-	private void display() {
+	private String display() {
 		if (buffer.size() == 0) {
-			showToUser(MESSAGE_EMPTY_LIST);
+			return MESSAGE_EMPTY_LIST;
 		} else {
+			String temp = "";
 			for (int i = 0; i < buffer.size(); i++) {
-				showToUser(i+1 + "." + buffer.get(i));
+				temp = temp + Integer.toString(i+1) + "." + buffer.get(i) + "\n";
 			}
+			return temp;
 		}
 	}
 	/**
 	 * Delete a certain task specified by the content
 	 */
-	private void delete(String content) {
+	private String delete(String content) {
 		try {
 			if (isLegalArgumentsDel(content)) {
 				int index = getIndex(content);
 				String TextRemoved = buffer.get(index);
 				buffer.remove(index);
 				updateFile();
-				showToUser(TextRemoved + MESSAGE_DELETE + fileName);
+				return TextRemoved + MESSAGE_DELETE + fileName;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	private static int getIndex(String content) {
@@ -304,13 +312,13 @@ public class TextBuddy {
 	/**
 	 * Add a new task to the end of the task list
 	 */
-	private void add(String content) {
+	private String add(String content) {
 		if (isLegalArgumentsAdd(content)) {
-			showToUser(MESSAGE_ADD_NULL);
+			return MESSAGE_ADD_NULL;
 		} else {
 			buffer.add(content);
 			appendFile(content);
-			showToUser(content + MESSAGE_ADD + fileName);
+			return content + MESSAGE_ADD + fileName;
 		}
 	}
 
@@ -347,8 +355,27 @@ public class TextBuddy {
 	}
 
 	private static TextBuddy setUpEnvironment(String[] args) {
-		String FileName = args[0];
-		return new TextBuddy(FileName);
+		String name = args[0];
+		TextBuddy tb = new TextBuddy();
+		fileName = name;
+		File file = new File(fileName);
+		try {
+			if (!file.exists() || !file.isFile()) {
+				file.createNewFile();
+			}
+			BufferedReader br = new BufferedReader(new FileReader(fileName));
+			String temp = br.readLine();
+			while (temp != null) {
+				buffer.add(temp);
+				temp = br.readLine();
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return tb;
 	}
 
 	private static void exitIfIllegalArgument(String[] args) {
