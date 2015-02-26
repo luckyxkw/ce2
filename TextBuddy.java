@@ -201,28 +201,6 @@ public class TextBuddy {
 		return commandType == null;
 	}
 	/**
-	 * Remove the current task list from disk and exit
-	 */
-	private String drop() {
-		File file = new File(fileName);
-		file.delete();
-		return MESSAGE_DROP; 
-	}
-	/**
-	 * Delete all tasks from current task list
-	 */
-	private String clear() {
-		try {
-			buffer = new ArrayList<String>();
-			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
-			bw.close();
-			return MESSAGE_CLEAR;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	/**
 	 * Copy the content in the buffer into the file
 	 */
 	private void updateFile() throws IOException {
@@ -247,6 +225,67 @@ public class TextBuddy {
 			e.printStackTrace();
 		}	
 	}
+	
+	private static int getIndex(String content) {
+		return Integer.parseInt(content) - 1;
+	}
+	
+	private static boolean isNumeric(String content) { 
+		Pattern pattern = Pattern.compile("[0-9]*"); 
+		Matcher isNum = pattern.matcher(content);
+		if (!isNum.matches()) {
+			return false;
+		}
+		return true; 
+	}
+	
+	private boolean isBounded(String content) {
+		int index = getIndex(content);
+		return index >= 0 && index < buffer.size();
+	}
+	
+	private boolean isLegalArgumentsDel(String content) {
+		if (content == null) {
+			showToUser(MESSAGE_DELETE_NULL);
+			return false;
+		} else if (isNumeric(content) && isBounded(content)) {
+			return true;
+		} else {
+			showToUser(MESSAGE_NOTASK);
+			return false;
+		}
+	}
+	
+	private boolean isLegalArgumentsAdd(String content) {
+		return content == null || content.equals("");
+	}
+
+	private void methodNotSupported() {
+		showToUser(MESSAGE_NOTSUPPORTED);
+	}
+	/**
+	 * Remove the current task list from disk and exit
+	 */
+	private String drop() {
+		File file = new File(fileName);
+		file.delete();
+		return MESSAGE_DROP; 
+	}
+	/**
+	 * Delete all tasks from current task list
+	 */
+	private String clear() {
+		try {
+			buffer = new ArrayList<String>();
+			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
+			bw.close();
+			return MESSAGE_CLEAR;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/**
 	 * Sort according to the content requires
 	 * Now only support sort according to alphabet.
@@ -293,35 +332,6 @@ public class TextBuddy {
 		return null;
 	}
 	
-	private static int getIndex(String content) {
-		return Integer.parseInt(content) - 1;
-	}
-	
-	private static boolean isNumeric(String content) { 
-		Pattern pattern = Pattern.compile("[0-9]*"); 
-		Matcher isNum = pattern.matcher(content);
-		if (!isNum.matches()) {
-			return false;
-		}
-		return true; 
-	}
-	
-	private boolean isBounded(String content) {
-		int index = getIndex(content);
-		return index >= 0 && index < buffer.size();
-	}
-	
-	private boolean isLegalArgumentsDel(String content) {
-		if (content == null) {
-			showToUser(MESSAGE_DELETE_NULL);
-			return false;
-		} else if (isNumeric(content) && isBounded(content)) {
-			return true;
-		} else {
-			showToUser(MESSAGE_NOTASK);
-			return false;
-		}
-	}
 	/**
 	 * Add a new task to the end of the task list
 	 */
@@ -349,14 +359,6 @@ public class TextBuddy {
 			}
 			return temp;
 		}
-	}
-
-	private boolean isLegalArgumentsAdd(String content) {
-		return content == null || content.equals("");
-	}
-
-	private void methodNotSupported() {
-		showToUser(MESSAGE_NOTSUPPORTED);
 	}
 
 	private String getContent(String currentCommand) {
