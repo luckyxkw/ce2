@@ -40,6 +40,7 @@ public class TextBuddy {
 	private static final String MESSAGE_CLEAR = "Your task list has been cleared!";
 	private static final String MESSAGE_DROP = "The current task list has been deleted!";
 	private static final String MESSAGE_NOTASK = "Sorry, no such task!";
+	private static final String MESSAGE_NOMATCH = "Sorry, no match task!";
 	
 	private static final String[] KEYWORD_ADD = {"add", "insert"};
 	private static final String[] KEYWORD_DELETE = {"delete", "remove", "rm"};
@@ -350,14 +351,18 @@ public class TextBuddy {
 			return display();
 		} else {
 			String temp = "";
-			int count = 1;
+			int count = 0;
 			for (int i = 0; i < buffer.size(); i++) {
 				if (buffer.get(i).contains(content)) {
-					temp = temp + Integer.toString(count) + "." + buffer.get(i) + "\n";
 					count++;
+					temp = temp + Integer.toString(count) + "." + buffer.get(i) + "\n";
 				}
 			}
-			return temp;
+			if (count == 0) {
+				return MESSAGE_NOMATCH;
+			} else {
+				return temp;
+			}
 		}
 	}
 
