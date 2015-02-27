@@ -73,6 +73,7 @@ public class TextBuddy {
 	}
 
 	private static String fileName = null;
+	private static File file = null;
 	private static ArrayList<String> buffer = null;
 	private Hashtable<String, Integer> featureList = null;
 	
@@ -86,6 +87,59 @@ public class TextBuddy {
 		tb.addInSelectedFeatures();
 		return tb;
 	}
+	
+	private static TextBuddy setUpEnvironment(String[] args) {
+		TextBuddy tb = createInstance(args);
+		loadFileContent();
+		return tb;
+	}
+
+	private static void loadFileContent() {
+		try {
+			if (!file.exists() || !file.isFile()) {
+				file.createNewFile();
+			}
+			BufferedReader br = new BufferedReader(new FileReader(fileName));
+			String temp = br.readLine();
+			while (temp != null) {
+				buffer.add(temp);
+				temp = br.readLine();
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static TextBuddy createInstance(String args[]) {
+		String name = args[0];
+		TextBuddy tb = new TextBuddy();
+		fileName = name;
+		file = new File(fileName);
+		return tb;
+	}
+	/**
+	 * Decide which features are implemented, convenient for adding or deleting features.
+	 */
+	private void addInSelectedFeatures() {
+		addFeature(KEYWORD_ADD, INDEX_ADD);
+		addFeature(KEYWORD_DELETE, INDEX_DELETE);
+		addFeature(KEYWORD_DISPLAY, INDEX_DISPLAY);
+		addFeature(KEYWORD_SORT, INDEX_SORT);
+		addFeature(KEYWORD_EXIT, INDEX_EXIT);
+		addFeature(KEYWORD_CLEAR, INDEX_CLEAR);
+		addFeature(KEYWORD_DROP, INDEX_DROP);
+		addFeature(KEYWORD_SEARCH, INDEX_SEARCH);
+	}
+	
+	private void addFeature(String[] keyWordList, int index) {
+		for (int i = 0; i < keyWordList.length; i ++) {
+			featureList.put(keyWordList[i], index);
+		}
+	}
+	
 	public String executeCommand(String command) {
 		String Command = getCommand(command);
 		String Content = getContent(command);
@@ -142,19 +196,6 @@ public class TextBuddy {
 
 	private boolean isTerminateCommand(String currentCommand) {
 		return this.solve(currentCommand) == BREAK_TRUE;
-	}
-	/**
-	 * Decide which features are implemented, convenient for adding or deleting features.
-	 */
-	private void addInSelectedFeatures() {
-		addFeature(KEYWORD_ADD, INDEX_ADD);
-		addFeature(KEYWORD_DELETE, INDEX_DELETE);
-		addFeature(KEYWORD_DISPLAY, INDEX_DISPLAY);
-		addFeature(KEYWORD_SORT, INDEX_SORT);
-		addFeature(KEYWORD_EXIT, INDEX_EXIT);
-		addFeature(KEYWORD_CLEAR, INDEX_CLEAR);
-		addFeature(KEYWORD_DROP, INDEX_DROP);
-		addFeature(KEYWORD_SEARCH, INDEX_SEARCH);
 	}
 	/**
 	 * Determine which method the user is calling and apply appropriate method
@@ -268,7 +309,6 @@ public class TextBuddy {
 	 * Remove the current task list from disk and exit
 	 */
 	private String drop() {
-		File file = new File(fileName);
 		file.delete();
 		return MESSAGE_DROP; 
 	}
@@ -382,36 +422,6 @@ public class TextBuddy {
 		} else {
 			return currentCommand.substring(0, FirstSpace);
 		}
-	}
-
-	private void addFeature(String[] keyWordList, int index) {
-		for (int i = 0; i < keyWordList.length; i ++) {
-			featureList.put(keyWordList[i], index);
-		}
-	}
-
-	private static TextBuddy setUpEnvironment(String[] args) {
-		String name = args[0];
-		TextBuddy tb = new TextBuddy();
-		fileName = name;
-		File file = new File(fileName);
-		try {
-			if (!file.exists() || !file.isFile()) {
-				file.createNewFile();
-			}
-			BufferedReader br = new BufferedReader(new FileReader(fileName));
-			String temp = br.readLine();
-			while (temp != null) {
-				buffer.add(temp);
-				temp = br.readLine();
-			}
-			br.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return tb;
 	}
 
 	private static void exitIfIllegalArgument(String[] args) {
